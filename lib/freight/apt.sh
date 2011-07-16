@@ -96,10 +96,9 @@ apt_cache() {
 		# Link this package into the pool.
 		POOL="pool/$DIST/$COMP/$(apt_prefix "$PACKAGE")/$(apt_sourcename "$PACKAGE")"
 		mkdir -p "$VARCACHE/$POOL"
-		if [ -f "$VARCACHE/$POOL/$FILENAME" ]
+		if [ ! -f "$VARCACHE/$POOL/$FILENAME" ]
 		then
-			echo "# [freight] pool already has $PACKAGE" >&2
-		else
+			echo "# [freight] adding package to pool: $PACKAGE" >&2
 			ln "$REFS/$PACKAGE" "$VARCACHE/$POOL/$FILENAME"
 		fi
 
@@ -195,10 +194,12 @@ EOF
 		rm -rf "$DISTCACHE"
 		exit 1
 	}
+
+	# Generate keyring
 	mkdir -m700 -p "$TMP/gpg"
-	gpg --export -a "$GPG" |
+	gpg -q --export -a "$GPG" |
 	tee "$VARCACHE/pubkey.gpg" |
-	gpg --homedir "$TMP/gpg" --import
+	gpg -q --homedir "$TMP/gpg" --import
 	mv "$TMP/gpg/pubring.gpg" "$VARCACHE/keyring.gpg"
 
 	# Move the symbolic link for this distro to this build.
